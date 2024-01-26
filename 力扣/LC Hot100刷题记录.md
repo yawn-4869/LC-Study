@@ -204,5 +204,154 @@ public:
 
 
 
-## 17. 电话号码的字母组合
+## 17. 电话号码的字母组合 20240126
+
+```c++
+class Solution {
+    vector<string> ans;
+public:
+    vector<string> letterCombinations(string digits) {
+        if(digits.empty()) {
+            return ans;
+        }
+        // 初始化map
+        unordered_map<char, string> index;
+        index['2'] = "abc";
+        index['3'] = "def";
+        index['4'] = "ghi";
+        index['5'] = "jkl";
+        index['6'] = "mno";
+        index['7'] = "pqrs";
+        index['8'] = "tuv";
+        index['9'] = "wxyz";
+
+        string path = "";
+        backtrack(index, digits, path, 0);
+        return ans;
+    }
+
+    void backtrack(unordered_map<char, string>& index, string digits, string& path, int i) {
+        if(i == digits.size()) {
+            ans.push_back(path);
+            return;
+        }
+        string str = index[digits[i]];
+        for(char& c : str) {
+            path.push_back(c);
+            backtrack(index, digits, path, i+1);
+            path.pop_back();
+        }
+    }
+};
+```
+
+
+
+## 39. 组合总和 20240126
+
+```c++
+class Solution {
+    vector<vector<int>> ans;
+public:
+    vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
+        vector<int> path;
+        backtrack(candidates, path, target, 0);
+        return ans;
+    }
+    void backtrack(vector<int>& candidates, vector<int>& path, int target, int index) {
+        if(index == candidates.size() || target <= 0) {
+            if(target == 0) {
+                ans.push_back(path);
+            }
+            return;
+        }
+
+        path.push_back(candidates[index]);
+        backtrack(candidates, path, target - candidates[index], index);
+        path.pop_back();
+        backtrack(candidates, path, target, index + 1);
+
+    }
+};
+```
+
+
+
+## 22. 括号生成 20240126
+
+```c++
+class Solution {
+    vector<string> ans;
+public:
+    vector<string> generateParenthesis(int n) {
+        // path要初始化，以防backtrack的时候访问越界
+        string path(2*n, '(');
+        backtrack(n, 0, path);
+        return ans;
+    }
+
+    void backtrack(int n, int index, string& path) {
+        if(index == 2 * n) {
+            if(isValid(path)) {
+                ans.push_back(path);
+            }
+            return;
+        }
+        path[index] = '(';
+        backtrack(n, index + 1, path);
+        path[index] = ')';
+        backtrack(n, index + 1, path);
+    }
+
+    bool isValid(string parenthesis) {
+        stack<char> stk;
+        for(char &c : parenthesis) {
+            if(c == '(') {
+                stk.push(c);
+            } else {
+                if(stk.empty()) {
+                    return false;
+                }
+                stk.pop();
+            }
+        }
+        return stk.empty();
+    }
+};
+```
+
+
+
+## 79. 单词搜索 20240126
+
+```c++
+class Solution {
+public:
+    bool exist(vector<vector<char>>& board, string word) {
+        stack<pair<int, int>> stk;
+        int m = board.size(), n = board[0].size();
+        for(int i = 0; i < m; ++i) {
+            for(int j = 0; j < n; ++j) {
+                if(backtrack(board, i, j, 0, word)) return true;
+            }
+        }
+        return false;
+    }
+
+    bool backtrack(vector<vector<char>>& board, int x, int y, int index, string word) {
+        if(index == word.size()) {
+            return true;
+        }
+        int m = board.size(), n = board[0].size();
+        if(x < 0 || x >= m || y < 0 || y >= n || board[x][y] != word[index]) {
+            return false;
+        }
+        board[x][y] = '\0';
+        bool res = backtrack(board, x+1, y, index+1, word) || backtrack(board, x-1, y, index+1, word) || 
+                    backtrack(board, x, y+1, index+1, word) || backtrack(board, x, y-1, index+1, word);
+        board[x][y] = word[index];
+        return res;
+    }
+};
+```
 
