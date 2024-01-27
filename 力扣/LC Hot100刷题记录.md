@@ -355,3 +355,177 @@ public:
 };
 ```
 
+
+
+## 131. 分割回文串 20240127
+
+```c++
+class Solution {
+    vector<vector<string>> ans;
+public:
+    vector<vector<string>> partition(string s) {
+        int n = s.size();
+        // 预处理，减少重复比较
+        vector<vector<bool>> f(n, vector<bool>(n, true));
+        for(int i = n-1; i >= 0; --i) {
+            for(int j = i+1; j < n; ++j) {
+                f[i][j] = (s[i] == s[j]) && f[i+1][j-1];
+            }
+        }
+
+        vector<string> path;
+        backtrack(s, 0, path, f);
+        return ans;
+    }
+
+    void backtrack(string s, int idx, vector<string>& path, vector<vector<bool>> f) {
+        if(idx == s.size()) {
+            ans.push_back(path);
+            return;
+        }
+
+        for(int j = idx; j < s.size(); ++j) {
+            if(f[idx][j]) {
+                path.push_back(s.substr(idx, j-idx+1));
+                backtrack(s, j+1, path, f);
+                path.pop_back();
+            }
+        }
+    }
+};
+```
+
+
+
+## 35. 搜索插入位置 20240127
+
+```c++
+class Solution {
+public:
+    int searchInsert(vector<int>& nums, int target) {
+        int left = 0, right = nums.size() - 1;
+        while(left <= right) {
+            int mid = left + (right - left) / 2;
+            if(nums[mid] == target) {
+                return mid;
+            } else if(nums[mid] < target) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+        return left;
+    }
+};
+```
+
+
+
+## 74. 搜索二维矩阵 20240127
+
+```c++
+class Solution {
+public:
+    bool searchMatrix(vector<vector<int>>& matrix, int target) {
+        int m = matrix.size(), n = matrix[0].size();
+        int i = 0, j = n - 1;
+        while(i < m && j >= 0) {
+            if(matrix[i][j] == target) {
+                return true;
+            } else if (matrix[i][j] < target) {
+                i++;
+            } else {
+                j--;
+            }
+        }
+        return false;
+    }
+};
+```
+
+
+
+## 34. 在排序数组中查找元素的第一个和最后一个位置 20240127
+
+```c++
+class Solution {
+public:
+    vector<int> searchRange(vector<int>& nums, int target) {
+        int left = 0, right = nums.size() - 1;
+        int pos = -1;
+        while(left <= right) {
+            int mid = left + (right - left) / 2;
+            if(nums[mid] == target) {
+                pos = mid;
+                break;
+            } else if(nums[mid] < target) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+        if(pos == -1) {
+            return {-1, -1};
+        }
+        left = right = pos;
+        while(left >= 0 && nums[left] == target) left--;
+        while(right < nums.size() && nums[right] == target) right++;
+        return {left+1, right-1};
+    }
+};
+```
+
+
+
+## 33. 搜索旋转排序数组 20240127
+
+```c++
+class Solution {
+public:
+    int search(vector<int>& nums, int target) {
+        int n = nums.size();
+        // 根据二分查找k的位置
+        int left = 0, right = n - 1;
+        while(left <= right) {
+            int mid = left + (right - left) / 2;
+            if(nums[mid] > nums[n-1]) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+
+        int k = left;
+        
+        // 两次二分查找
+        left = 0, right = k - 1;
+        while(left <= right) {
+            int mid = left + (right - left) / 2;
+            if(nums[mid] == target) {
+                return mid;
+            } else if(nums[mid] < target) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+
+        left = k, right = n - 1;
+        while(left <= right) {
+            int mid = left + (right - left) / 2;
+            if(nums[mid] == target) {
+                return mid;
+            } else if(nums[mid] < target) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+
+        return -1;
+    }
+};
+```
+
+
+
