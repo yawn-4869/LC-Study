@@ -863,3 +863,336 @@ public:
 };
 ```
 
+
+
+## 55. 跳跃游戏 20240223
+
+* 思路：将其转化为最大可到达范围
+
+```c++
+class Solution {
+public:
+    bool canJump(vector<int>& nums) {
+        int cover = 0;
+        if(nums.size() == 1) return true;
+        for(int i = 0; i <= cover; ++i) {
+            cover = max(i+nums[i], cover);
+            if(cover >= nums.size() - 1) return true;
+        }
+        return false;
+    }
+};
+```
+
+
+
+## 45. 跳跃游戏II 20240223
+
+* 思路：对于每次跳跃，找到其跳跃范围[start, end]，进行跳跃模拟
+
+```c++
+class Solution {
+public:
+    int jump(vector<int>& nums) {
+        // if(nums.size() == 1) return 0;
+        int end = 0; // 本次跳跃终点
+        int start = 0; // 本次跳跃起点
+        int max_pos = 0; // 跳跃边界
+        int ans = 0;
+        while(end < nums.size() - 1) {
+            for(int i = start; i <= end; ++i) {
+                // 在本次跳跃范围内循环找到下一次跳跃终点
+                max_pos = max(max_pos, i+nums[i]);
+            }
+            // 迭代
+            start = end;
+            end = max_pos;
+            ans++;
+        }
+        return ans;
+    }
+};
+```
+
+
+
+## 763. 划分字母区间 20240223
+
+* 思路：对于字符串中的每个字母 `c` ，找到其在字符串中最后出现的位置 `last[c]` 
+
+  由于同一字母最多出现在一个片段中，因此分割的子字符串的长度为 `max(end, last[c])` 
+
+  循环遍历，得到每个子字符串的长度
+
+```c++
+class Solution {
+public:
+    vector<int> partitionLabels(string s) {
+        vector<int> last(26);
+        vector<int> ans;
+        int n = s.size();
+        for(int i = 0; i < n; ++i) {
+            last[s[i] - 'a'] = i;
+        }
+
+        int start = 0, end = 0;
+        for(int i = 0; i < n; ++i) {
+            end = max(end, last[s[i] - 'a']);
+            if(i == end) {
+                ans.push_back(end - start + 1);
+                start = end + 1;
+            }
+        }
+        return ans;
+    }
+};
+```
+
+
+
+## 70. 爬楼梯 20240223
+
+```c++
+class Solution {
+public:
+    int climbStairs(int n) {
+        // f[i] = f[i-1] + f[i-2]
+        // f[0] = 1 f[1] = 1
+        int first = 1, second = 1;
+        for(int i = 2; i <= n; ++i) {
+            int tmp = second;
+            second = first + second;
+            first = tmp;
+        }
+        return second;
+    }
+};
+```
+
+
+
+## 118. 杨辉三角 20240223
+
+```c++
+class Solution {
+public:
+    vector<vector<int>> generate(int numRows) {
+        vector<vector<int>> ans(numRows);
+        for(int i = 0; i < numRows; ++i) {
+            ans[i].resize(i+1, 1);
+            // ans[i][j] = ans[i-1][j-1] + ans[i-1][j]
+            if(i == 0) continue;
+            for(int j = 1; j < i; ++j) {
+                ans[i][j] = ans[i-1][j-1] + ans[i-1][j];
+            }
+        }
+        return ans;
+    }
+};
+```
+
+
+
+## 198. 打家劫舍 20240223
+
+```c++
+class Solution {
+public:
+    int rob(vector<int>& nums) {
+        // f[i] = max(f[i-1], f[i-2] + nums[i])
+        if(nums.size() == 1) return nums[0];
+        int first = nums[0], second = max(nums[0], nums[1]);
+        for(int i = 2; i < nums.size(); ++i) {
+            int tmp = second;
+            second = max(second, first + nums[i]);
+            first = tmp;
+        }
+        return second;
+    }
+};
+```
+
+
+
+## 139. 单词拆分 20240223
+
+```c++
+class Solution {
+public:
+    bool wordBreak(string s, vector<string>& wordDict) {
+        unordered_set<string> word_dict_set;
+        for(auto &word : wordDict) {
+            word_dict_set.emplace(word);
+        }
+
+        int n = s.size();
+        vector<bool> dp(n+1);
+        dp[0] = true;
+        for(int i = 1; i <= n; ++i) {
+            for(int j = 0; j < i; ++j) {
+                if(dp[j] && word_dict_set.find(s.substr(j, i - j)) != word_dict_set.end()) {
+                    dp[i] = true;
+                    break;
+                }
+            }
+        }
+        return dp[n];
+    }
+};
+```
+
+
+
+## 300. 最长递增子序列 20240224
+
+* 思路（O(n^2)）：记数组 `dp[i]` 为以 `nums[i]` 结尾的数组最长升序子序列的长度
+
+对于 `dp[i]` 包含的区间 `[0, i-1]` 中的数字 `j` , 若 `nums[i] > nums[j]` , 则有：
+
+`dp[i] = max(dp[j]) + 1` 否则，`dp[i] = max(dp[j])` 
+
+对于整个数组，找到 `dp` 的最大值即可
+
+```c++
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> dp(n);
+        for(int i = 0; i < n; ++i) {
+            dp[i] = 1; // 对于每个子数组dp[i], nums[i]必为其元素
+            for(int j = 0; j < i; ++j) {
+                if(nums[i] > nums[j]) {
+                    dp[i] = max(dp[i], dp[j] + 1);
+                }
+            }
+        }
+        return *max_element(dp.begin(), dp.end());
+    }
+};
+```
+
+
+
+## 152. 乘积最大子数组 20240224
+
+* 思路：可以得到简单的递推关系：`f[i] = max(f[i-1]*nums[i], nums[i]` 
+
+  但考虑当前位置 `nums[i]` , 当 `nums[i]` 为负数时，我们需要前面的 `f[i-1]` 应当是尽可能地小（尽可能地负的更多）
+
+  因此，需要维护两个数组 `max_f` 和 `min_f` 
+
+  得到递推关系：
+
+  `max_f[i] = max(max_f[i-1] * nums[i], max(min_f[i-1] * nums[i], nums[i])) `
+
+  `min_f[i] = min(min_f[i-1] * nums[i], min(max_f[i-1] * nums[i], nums[i]))` 
+
+```c++
+class Solution {
+public:
+    int maxProduct(vector<int>& nums) {
+        vector<int> max_f(nums), min_f(nums);
+        for(int i = 1; i < nums.size(); ++i) {
+            max_f[i] = max(max_f[i-1] * nums[i], max(nums[i], min_f[i-1] * nums[i]));
+            min_f[i] = min(min_f[i-1] * nums[i], min(nums[i], max_f[i-1] * nums[i]));
+        }
+        return *max_element(max_f.begin(), max_f.end());
+    }
+};
+```
+
+
+
+## 62. 不同路径 20240224
+
+```c++
+class Solution {
+public:
+    int uniquePaths(int m, int n) {
+        vector<vector<int>> dp(m, vector<int>(n));
+        // dp[i][j] = dp[i-1][j] + dp[i][j-1]
+        dp[0][0] = 1;
+        for(int i = 0; i < m; ++i) {
+            for(int j = 0; j < n; ++j) {
+                if(i - 1 >= 0) {
+                    dp[i][j] += dp[i-1][j];
+                }
+                if(j - 1 >= 0) {
+                    dp[i][j] += dp[i][j-1];
+                }
+            }
+        }
+        return dp[m-1][n-1];
+    }    
+};
+```
+
+
+
+## 64. 最小路径和 20240224
+
+```c++
+class Solution {
+public:
+    int minPathSum(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size();
+        vector<vector<int>> dp(m, vector<int>(n));
+        for(int i = 0; i < m; ++i) {
+            for(int j = 0; j < n; ++j) {
+                if(i - 1 < 0 && j - 1 < 0) {
+                    dp[i][j] = grid[i][j];
+                } else if(i - 1 < 0) {
+                    dp[i][j] = dp[i][j-1] + grid[i][j];
+                } else if(j - 1 < 0) {
+                    dp[i][j] = dp[i-1][j] + grid[i][j];
+                } else {
+                    dp[i][j] = min(dp[i-1][j], dp[i][j-1]) + grid[i][j];
+                }
+            }
+        }
+        return dp[m-1][n-1];
+    }
+};
+```
+
+
+
+## 5. 最长回文子串
+
+```c++
+class Solution {
+public:
+    string longestPalindrome(string s) {
+        int n = s.size();
+        int l = 0, r = 0;
+        for(int i = 0; i < n; ++i) {
+            auto [s1, e1] = getPosOfPalindrome(s, i, i);
+            auto [s2, e2] = getPosOfPalindrome(s, i, i+1);
+            if(e1 - s1 > r - l) {
+                l = s1; 
+                r = e1;
+            }
+
+            if(e2 - s2 > r - l) {
+                l = s2;
+                r = e2;
+            }
+        }
+        return s.substr(l, r - l + 1);
+    }
+
+    pair<int, int> getPosOfPalindrome(string s, int l, int r) {
+        int n = s.size();
+        while(l >= 0 && r < n) {
+            if(s[l] != s[r]) {
+                break;
+            }
+            l--;
+            r++;
+        }
+        return {l+1, r-1};
+    }
+};
+```
+
